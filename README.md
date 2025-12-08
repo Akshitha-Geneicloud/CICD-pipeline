@@ -142,32 +142,38 @@ Now GitHub will notify Jenkins when code changes.
 
 A sample working Jenkinsfile:
 
-`pipeline {
+pipeline {
     agent any
+
+    environment {
+        EC2_IP = credentials('ec2_ip')
+        EC2_USER = 'ubuntu'
+        SSH_KEY = credentials('ec2_ssh_key')
+    }
 
     stages {
 
         stage('Checkout Code') {
             steps {
-                git branch: 'main',
-                url: 'https://github.com/<project-repo>.git'
+                git branch: 'main', url: 'https://github.com/Akshitha-Geneicloud/CICD-pipeline.git'
             }
         }
 
         stage('Deploy to EC2') {
             steps {
                 sh '''
-                    echo "Deploying files to EC2 server..."
+                echo "Deploying files to EC2..."
 
-                    ssh -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/jen_key.pem ubuntu@<APP_SERVER_IP> "sudo rm -rf /var/www/html/*"
+                ssh -o StrictHostKeyChecking=no -i $SSH_KEY $EC2_USER@$EC2_IP "sudo rm -rf /var/www/html/*"
 
-                    scp -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/jen_key.pem -r chat.html script.js style.css ubuntu@<APP_SERVER_IP>:/var/www/html/
+                scp -o StrictHostKeyChecking=no -i $SSH_KEY -r * $EC2_USER@$EC2_IP:/var/www/html/
+
+                echo "Deployment Successful!"
                 '''
             }
         }
     }
-}` 
-
+}
 ----------
 
 # **6. Nginx Configuration**
