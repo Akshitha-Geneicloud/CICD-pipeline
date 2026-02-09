@@ -1,0 +1,26 @@
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/Akshitha-Geneicloud/CCD-pipeline.git'
+            }
+        }
+
+        stage('Deploy to EC2') {
+            steps {
+                sh '''
+                echo "Deploying files to EC2 server..."
+
+                ssh -o StrictHostKeyChecking=no -i ~/.ssh/jen_key.pem ubuntu@13.204.46.42 "sudo rm -rf /var/www/html/*"
+
+                scp -o StrictHostKeyChecking=no -i ~/.ssh/jen_key.pem -r * ubuntu@13.204.46.42:/var/www/html/
+
+                echo "Deployment completed successfully."
+                '''
+            }
+        }
+    }
+}
